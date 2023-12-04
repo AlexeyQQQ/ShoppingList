@@ -1,6 +1,7 @@
 package com.example.shoppinglist.presentation
 
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.example.shoppinglist.R
@@ -17,6 +18,5 @@ class ShoppingListActivity : AppCompatActivity() {
         viewModel.shopList.observe(this) {
             TODO()
         }
-        viewModel.getAllShopItem()
     }
 }
