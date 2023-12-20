@@ -24,6 +24,6 @@ class ShoppingListViewModel : ViewModel() {
 
     fun enabledShopItem(shopItem: ShopItem) {
         val newItem = shopItem.copy(enabled = !shopItem.enabled)
-        editShopItemUseCase.editShopItem(shopItem)
+        editShopItemUseCase.editShopItem(newItem)
     }
 }
