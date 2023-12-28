@@ -1,21 +1,17 @@
 package com.example.shoppinglist.presentation
 
 import android.os.Bundle
-import android.util.Log
-import android.view.LayoutInflater
-import android.widget.LinearLayout
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.example.shoppinglist.R
-import com.example.shoppinglist.domain.ShopItem
 
 class ShoppingListActivity : AppCompatActivity() {
 
     private lateinit var viewModel: ShoppingListViewModel
     private lateinit var recyclerViewShopList: RecyclerView
-    private lateinit var adapter: ShopListAdapter
+    private lateinit var shopListAdapter: ShopListAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,13 +20,59 @@ class ShoppingListActivity : AppCompatActivity() {
 
         viewModel = ViewModelProvider(this)[ShoppingListViewModel::class.java]
         viewModel.shopList.observe(this) {
-            adapter.shopList = it
+            shopListAdapter.shopList = it
         }
     }
 
     private fun setupRecyclerView() {
         recyclerViewShopList = findViewById(R.id.recyclerViewShopList)
-        adapter = ShopListAdapter()
-        recyclerViewShopList.adapter = adapter
+        shopListAdapter = ShopListAdapter()
+
+        with(recyclerViewShopList) {
+            adapter = shopListAdapter
+            recycledViewPool.setMaxRecycledViews(
+                ShopListAdapter.VIEW_TYPE_ENABLED,
+                ShopListAdapter.MAX_POOL_SIZE
+            )
+            recycledViewPool.setMaxRecycledViews(
+                ShopListAdapter.VIEW_TYPE_DISABLED,
+                ShopListAdapter.MAX_POOL_SIZE
+            )
+        }
+
+        setupAdapterClickListeners()
+        setupItemTouchHelper()
     }
+
+    private fun setupItemTouchHelper() {
+        val itemTouchHelper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
+            0,
+            ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
+        ) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder,
+            ): Boolean {
+                return false
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val position = viewHolder.adapterPosition
+                val shopItem = shopListAdapter.shopList[position]
+                viewModel.deleteShopItem(shopItem)
+            }
+        })
+        itemTouchHelper.attachToRecyclerView(recyclerViewShopList)
+    }
+
+    private fun setupAdapterClickListeners() {
+        shopListAdapter.onShopItemClickListener = {
+            println("Короткий клик по $it")
+        }
+        shopListAdapter.onShopItemLongClickListener = {
+            viewModel.enabledShopItem(it)
+        }
+    }
+
 }
